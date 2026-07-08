@@ -6,8 +6,6 @@ import { ColorPalette } from "../../theme/themeConfig";
 import { getFontColor, isDark, systemInfo } from "../../utils";
 import { reduceMotion } from "../../styles/reduceMotion.styled";
 
-// TODO: move EmojiContainer to top on smaller screens, fix text spacing
-
 interface TaskComponentProps {
   backgroundColor: string;
   done: boolean;
@@ -18,25 +16,45 @@ interface TaskComponentProps {
 
 export const TaskContainer = styled.div<TaskComponentProps>`
   display: flex;
-  align-items: center;
-  padding: 16px 16px 16px 20px;
-  border-radius: 30px;
+  align-items: flex-start;
+  padding: 18px 18px 18px 20px;
+  border-radius: 24px;
   margin-top: 12px;
+  gap: 14px;
+  position: relative;
+  overflow: hidden;
   transition: ${(
-    { isDragging }, // FIXME: disable transitions only if element is dragged (not when drag mode is enabled)
-  ) => (isDragging ? "none" : "border-left 0.2s, opacity 0.4s, filter 0.3s, box-shadow 0.3s")};
+    { isDragging },
+  ) => (isDragging ? "none" : "transform 0.2s, border-color 0.2s, opacity 0.4s, filter 0.3s, box-shadow 0.3s")};
   color: ${({ backgroundColor }) => getFontColor(backgroundColor)};
-  background-color: ${({ backgroundColor, done }) => `${backgroundColor}${done ? "cc" : ""}`};
-  opacity: ${({ done }) => (done ? 0.8 : 1)};
-  border-left: ${({ done }) => (done ? "8px solid #00ff1ee3" : "1px solid transparent")};
+  background: ${({ backgroundColor, done }) =>
+    `linear-gradient(135deg, ${backgroundColor}${done ? "66" : "f5"}, ${backgroundColor}${done ? "44" : "cc"})`};
+  opacity: ${({ done }) => (done ? 0.86 : 1)};
+  border: ${({ done }) => (done ? "1px solid #00ff1e8a" : "1px solid rgba(255, 255, 255, 0.22)")};
   box-shadow: ${(props) =>
-    props.glow && !props.blur ? `0 0 128px -20px ${props.backgroundColor}` : "none"};
-  /* text-shadow: ${({ backgroundColor, glow, done }) =>
-    glow && !done ? `0 0 2px ${getFontColor(backgroundColor)}78` : "none"}; */
+    props.glow && !props.blur
+      ? `0 16px 48px -28px ${props.backgroundColor}, 0 10px 24px -18px rgba(0, 0, 0, 0.45)`
+      : "0 10px 26px -22px rgba(0, 0, 0, 0.45)"};
   filter: ${({ blur }) => (blur ? "blur(2px) opacity(75%)" : "none")};
-  /* animation: ${fadeIn} 0.5s ease-in; */
   backdrop-filter: ${({ done }) => (done ? "blur(6px)" : "none")};
-  /* If the theme color and task color are the same, it changes the selection color to be different. */
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 6px;
+    background: ${({ done }) => (done ? "#00ff1ee3" : "rgba(255, 255, 255, 0.55)")};
+  }
+
+  &:hover {
+    transform: ${({ isDragging }) => (isDragging ? "none" : "translateY(-1px)")};
+    border-color: ${({ done }) => (done ? "#00ff1ee3" : "rgba(255, 255, 255, 0.42)")};
+    box-shadow: ${(props) =>
+      props.glow && !props.blur
+        ? `0 20px 54px -28px ${props.backgroundColor}, 0 14px 28px -18px rgba(0, 0, 0, 0.5)`
+        : "0 14px 30px -22px rgba(0, 0, 0, 0.5)"};
+  }
+
   *::selection {
     background-color: ${({ theme, backgroundColor }) =>
       theme.primary === backgroundColor ? "#ffffff" : theme.primary} !important;
@@ -47,9 +65,12 @@ export const TaskContainer = styled.div<TaskComponentProps>`
   ${({ theme }) => reduceMotion(theme)}
 
   @media (max-width: 768px) {
-    padding: 14px 14px 14px 18px;
+    padding: 16px;
     margin-top: 10px;
+    gap: 12px;
+    border-radius: 20px;
   }
+
   @media print {
     break-inside: avoid;
     page-break-inside: avoid;
@@ -62,7 +83,7 @@ export const TaskContainer = styled.div<TaskComponentProps>`
 
 export const EmojiContainer = styled.span<{ clr: string }>`
   text-decoration: none;
-  margin-right: 14px;
+  flex: 0 0 auto;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -74,6 +95,14 @@ export const EmojiContainer = styled.span<{ clr: string }>`
   border-radius: 18px;
   overflow: hidden;
   text-overflow: ellipsis;
+
+  @media (max-width: 768px) {
+    width: 36px;
+    height: 36px;
+    padding: 10px;
+    border-radius: 16px;
+  }
+
   @media print {
     background-color: white;
     color: black;
@@ -85,44 +114,65 @@ export const EmojiContainer = styled.span<{ clr: string }>`
 export const TaskCategoriesContainer = styled.div`
   display: flex;
   flex-wrap: wrap;
-  gap: 4px 6px;
+  gap: 6px;
   justify-content: left;
   align-items: center;
+  margin-top: 6px;
 `;
 
 export const TaskInfo = styled.div`
   display: flex;
   flex-direction: column;
   flex: 1;
+  min-width: 0;
+  gap: 4px;
 `;
 
 export const TaskHeader = styled.div`
   display: flex;
-  align-items: center;
-  gap: 6px;
+  align-items: flex-start;
+  gap: 10px;
+
+  @media (max-width: 640px) {
+    flex-direction: column;
+    gap: 4px;
+  }
 `;
 
 export const TaskName = styled.h3<{ done: boolean }>`
   font-size: 20px;
+  line-height: 1.25;
   margin: 0;
   text-decoration: ${({ done }) => (done ? "line-through" : "none")};
   word-break: break-word;
   white-space: pre-line;
+  opacity: ${({ done }) => (done ? 0.78 : 1)};
 `;
 
 export const TaskDate = styled.p`
-  margin: 0 6px;
+  margin: 2px 0 0 auto;
   text-align: right;
-  margin-left: auto;
-  font-size: 14px;
-  font-style: italic;
-  font-weight: 300;
+  flex: 0 0 auto;
+  font-size: 13px;
+  font-style: normal;
+  font-weight: 600;
+  opacity: 0.78;
+  border-radius: 999px;
+  padding: 3px 9px;
+  background: rgba(255, 255, 255, 0.14);
   backdrop-filter: none !important;
+
+  @media (max-width: 640px) {
+    margin-left: 0;
+    text-align: left;
+  }
 `;
 
 export const TaskDescription = styled.div<{ done: boolean }>`
-  margin: 0;
-  font-size: 18px;
+  margin: 2px 0 0;
+  font-size: 16px;
+  line-height: 1.45;
+  opacity: ${({ done }) => (done ? 0.7 : 0.92)};
   text-decoration: ${({ done }) => (done ? "line-through" : "none")};
   word-break: break-word;
 `;
@@ -153,23 +203,37 @@ export const TaskNotFound = styled.div`
 export const TasksContainer = styled.main`
   display: flex;
   justify-content: center;
-  max-width: 700px;
+  max-width: 760px;
   margin: 0 auto;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
+  width: 100%;
+
+  @media (max-width: 768px) {
+    gap: 6px;
+  }
 `;
 
 export const TimeLeft = styled.span<{ done: boolean }>`
   text-decoration: ${({ done }) => (done ? "line-through" : "none")};
   transition: 0.3s all;
-  font-size: 16px;
-  margin: 4px 0;
-  font-weight: 400;
-  display: flex;
+  font-size: 14px;
+  margin: 6px 0 0;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  max-width: 100%;
+  padding: 5px 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.14);
   backdrop-filter: none !important;
+
   @media (max-width: 768px) {
-    font-size: 14px;
+    font-size: 13px;
+    flex-wrap: wrap;
   }
+
   // fix for browser translate
   & font {
     margin: 0 1px;
@@ -180,6 +244,10 @@ export const SharedByContainer = styled.div`
   display: flex;
   align-items: center;
   gap: 4px;
+  margin-top: 4px;
+  font-size: 14px;
+  opacity: 0.86;
+
   @media (max-width: 768px) {
     font-size: 14px;
   }
@@ -193,11 +261,17 @@ export const DragHandle = styled.span`
 `;
 
 export const Pinned = styled.div`
-  display: flex;
+  display: inline-flex;
+  width: fit-content;
   justify-content: left;
   align-items: center;
-  opacity: 0.8;
-  font-size: 16px;
+  opacity: 0.9;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.16);
 `;
 
 export const TaskActionContainer = styled.div`
@@ -372,6 +446,22 @@ export const RingAlarm = styled(Alarm)<{ animate?: boolean }>`
 `;
 
 export const TaskActionsContainer = styled.div`
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  min-width: 40px;
+
+  & .MuiIconButton-root {
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.12);
+    transition: 0.2s background, 0.2s transform;
+  }
+
+  & .MuiIconButton-root:hover {
+    background: rgba(255, 255, 255, 0.22);
+    transform: translateY(-1px);
+  }
+
   @media print {
     display: none;
   }
