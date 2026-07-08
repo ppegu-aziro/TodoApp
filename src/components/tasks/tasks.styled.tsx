@@ -18,25 +18,46 @@ interface TaskComponentProps {
 
 export const TaskContainer = styled.div<TaskComponentProps>`
   display: flex;
-  align-items: center;
-  padding: 16px 16px 16px 20px;
-  border-radius: 30px;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 18px 18px 18px 20px;
+  border-radius: 24px;
   margin-top: 12px;
   transition: ${(
-    { isDragging }, // FIXME: disable transitions only if element is dragged (not when drag mode is enabled)
-  ) => (isDragging ? "none" : "border-left 0.2s, opacity 0.4s, filter 0.3s, box-shadow 0.3s")};
+    { isDragging },
+  ) =>
+    isDragging
+      ? "none"
+      : "transform 0.2s ease, border-color 0.2s ease, opacity 0.3s ease, filter 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease"};
   color: ${({ backgroundColor }) => getFontColor(backgroundColor)};
-  background-color: ${({ backgroundColor, done }) => `${backgroundColor}${done ? "cc" : ""}`};
-  opacity: ${({ done }) => (done ? 0.8 : 1)};
-  border-left: ${({ done }) => (done ? "8px solid #00ff1ee3" : "1px solid transparent")};
+  background-color: ${({ backgroundColor, done }) => `${backgroundColor}${done ? "b8" : "dd"}`};
+  opacity: ${({ done }) => (done ? 0.76 : 1)};
+  border: 1px solid ${({ backgroundColor, done }) => `${getFontColor(backgroundColor)}${done ? "22" : "14"}`};
+  border-left: ${({ done }) => (done ? "8px solid #00ff1ee3" : "4px solid transparent")};
   box-shadow: ${(props) =>
-    props.glow && !props.blur ? `0 0 128px -20px ${props.backgroundColor}` : "none"};
-  /* text-shadow: ${({ backgroundColor, glow, done }) =>
-    glow && !done ? `0 0 2px ${getFontColor(backgroundColor)}78` : "none"}; */
-  filter: ${({ blur }) => (blur ? "blur(2px) opacity(75%)" : "none")};
-  /* animation: ${fadeIn} 0.5s ease-in; */
-  backdrop-filter: ${({ done }) => (done ? "blur(6px)" : "none")};
-  /* If the theme color and task color are the same, it changes the selection color to be different. */
+    props.glow && !props.blur
+      ? `0 0 128px -20px ${props.backgroundColor}`
+      : "0 12px 28px -22px rgba(0, 0, 0, 0.45)"};
+  filter: ${({ blur, done }) => {
+    if (blur) return "blur(2px) opacity(75%)";
+    if (done) return "saturate(0.88)";
+    return "none";
+  }};
+  backdrop-filter: ${({ done }) => (done ? "blur(8px)" : "blur(10px)")};
+
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: ${(props) =>
+      props.glow && !props.blur
+        ? `0 0 128px -20px ${props.backgroundColor}`
+        : "0 18px 32px -22px rgba(0, 0, 0, 0.55)"};
+  }
+
+  &:focus-within {
+    border-color: ${({ theme }) => theme.primary};
+    box-shadow: ${({ theme }) => `0 0 0 3px ${theme.primary}22`};
+  }
+
   *::selection {
     background-color: ${({ theme, backgroundColor }) =>
       theme.primary === backgroundColor ? "#ffffff" : theme.primary} !important;
@@ -47,9 +68,12 @@ export const TaskContainer = styled.div<TaskComponentProps>`
   ${({ theme }) => reduceMotion(theme)}
 
   @media (max-width: 768px) {
-    padding: 14px 14px 14px 18px;
+    gap: 12px;
+    padding: 16px;
+    border-radius: 20px;
     margin-top: 10px;
   }
+
   @media print {
     break-inside: avoid;
     page-break-inside: avoid;
@@ -62,16 +86,17 @@ export const TaskContainer = styled.div<TaskComponentProps>`
 
 export const EmojiContainer = styled.span<{ clr: string }>`
   text-decoration: none;
-  margin-right: 14px;
+  margin-right: 2px;
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
   background-color: ${({ clr }) => (clr === ColorPalette.fontDark ? "#4b4b4b6e" : "#dddddd9d")};
   font-size: 32px;
   padding: 12px;
   width: 42px;
   height: 42px;
-  border-radius: 18px;
+  border-radius: 16px;
   overflow: hidden;
   text-overflow: ellipsis;
   @media print {
@@ -85,25 +110,30 @@ export const EmojiContainer = styled.span<{ clr: string }>`
 export const TaskCategoriesContainer = styled.div`
   display: flex;
   flex-wrap: wrap;
-  gap: 4px 6px;
+  gap: 6px;
   justify-content: left;
   align-items: center;
+  margin-top: 8px;
 `;
 
 export const TaskInfo = styled.div`
   display: flex;
   flex-direction: column;
   flex: 1;
+  min-width: 0;
+  gap: 4px;
 `;
 
 export const TaskHeader = styled.div`
   display: flex;
-  align-items: center;
-  gap: 6px;
+  align-items: flex-start;
+  gap: 8px;
+  flex-wrap: wrap;
 `;
 
 export const TaskName = styled.h3<{ done: boolean }>`
-  font-size: 20px;
+  font-size: clamp(18px, 2.2vw, 20px);
+  line-height: 1.2;
   margin: 0;
   text-decoration: ${({ done }) => (done ? "line-through" : "none")};
   word-break: break-word;
@@ -111,18 +141,20 @@ export const TaskName = styled.h3<{ done: boolean }>`
 `;
 
 export const TaskDate = styled.p`
-  margin: 0 6px;
+  margin: 2px 0 0 auto;
   text-align: right;
-  margin-left: auto;
-  font-size: 14px;
+  font-size: 13px;
   font-style: italic;
-  font-weight: 300;
+  font-weight: 400;
+  opacity: 0.82;
   backdrop-filter: none !important;
 `;
 
 export const TaskDescription = styled.div<{ done: boolean }>`
   margin: 0;
-  font-size: 18px;
+  font-size: 16px;
+  line-height: 1.55;
+  opacity: ${({ done }) => (done ? 0.72 : 0.92)};
   text-decoration: ${({ done }) => (done ? "line-through" : "none")};
   word-break: break-word;
 `;
@@ -153,24 +185,27 @@ export const TaskNotFound = styled.div`
 export const TasksContainer = styled.main`
   display: flex;
   justify-content: center;
-  max-width: 700px;
+  max-width: 760px;
   margin: 0 auto;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
 `;
 
 export const TimeLeft = styled.span<{ done: boolean }>`
   text-decoration: ${({ done }) => (done ? "line-through" : "none")};
   transition: 0.3s all;
-  font-size: 16px;
-  margin: 4px 0;
-  font-weight: 400;
+  font-size: 14px;
+  margin: 2px 0 0;
+  font-weight: 500;
   display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2px;
   backdrop-filter: none !important;
+  opacity: ${({ done }) => (done ? 0.72 : 0.9)};
   @media (max-width: 768px) {
-    font-size: 14px;
+    font-size: 13px;
   }
-  // fix for browser translate
   & font {
     margin: 0 1px;
   }
@@ -180,6 +215,7 @@ export const SharedByContainer = styled.div`
   display: flex;
   align-items: center;
   gap: 4px;
+  opacity: 0.85;
   @media (max-width: 768px) {
     font-size: 14px;
   }
@@ -188,16 +224,22 @@ export const SharedByContainer = styled.div`
 export const DragHandle = styled.span`
   display: flex;
   align-items: center;
+  align-self: center;
   padding: 6px;
   cursor: grab;
+  opacity: 0.72;
 `;
 
 export const Pinned = styled.div`
   display: flex;
   justify-content: left;
   align-items: center;
+  gap: 4px;
   opacity: 0.8;
-  font-size: 16px;
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
 `;
 
 export const TaskActionContainer = styled.div`
@@ -228,7 +270,8 @@ export const TaskActionContainer = styled.div`
 
 export const StyledRadio = styled(Checkbox)<{ clr: string }>`
   margin-left: -8px;
-  margin-right: 4px;
+  margin-right: 2px;
+  margin-top: 2px;
   color: ${({ clr }) => clr} !important;
   animation: ${fadeIn} 0.3s ease-in;
   &.Mui-checked {
@@ -257,7 +300,7 @@ export const RadioUnchecked = styled(RadioButtonUnchecked)`
 
 export const CategoriesListContainer = styled.div`
   position: sticky;
-  background: transparent;
+  background: linear-gradient(to bottom, transparent, transparent);
   backdrop-filter: blur(24px);
   z-index: 2;
   top: 0;
@@ -269,7 +312,6 @@ export const CategoriesListContainer = styled.div`
   padding: 0 0 6px 0;
   margin: 8px 0;
 
-  /* Custom Scrollbar Styles */
   ::-webkit-scrollbar {
     width: 8px;
     height: 8px;
@@ -372,6 +414,19 @@ export const RingAlarm = styled(Alarm)<{ animate?: boolean }>`
 `;
 
 export const TaskActionsContainer = styled.div`
+  display: flex;
+  align-items: flex-start;
+  align-self: stretch;
+  justify-content: center;
+  opacity: 0.82;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+
+  ${TaskContainer}:hover &,
+  ${TaskContainer}:focus-within & {
+    opacity: 1;
+    transform: translateX(0);
+  }
+
   @media print {
     display: none;
   }
